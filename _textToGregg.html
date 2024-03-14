@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Modification of Pavel Krevanek's translator.html -->
 <!--
-    //Version: 2024/03/13at18:24 Run inside any dictionary of words with ./_words.array.js and ./!PNGCustom/_words.array2.js
+    //Version: 2024/03/13at20:18 Run inside any dictionary of words with ./_words.array.js and ./!PNGCustom/_words.array2.js folder name as title
     //Version: 2024/02/14at13:35 replace period followed by newline with newline
     //Version: 2024/01/10at10:45 If isUseDict2 checked, Search dict2 array for match first, then search dict array for match.
     //Version: 2024/01/07at18:55 Preserve original case of the input word so we can display it if it is not found in the dictionary
@@ -28,7 +28,14 @@
     <script>
         // Set the version number
         document.addEventListener('DOMContentLoaded', (event) => {
-            document.getElementById('version').textContent = 'ersion: 2024/03/13at18:24';
+            document.getElementById('version').textContent = 'Version: 2024/03/13at20:18';
+            //set the folder name as the title
+            const url = new URL(window.location.href);
+            const path = url.pathname;
+            const folderName = path.substring(0,path.lastIndexOf('/')).split('/').pop();
+            document.title = `Regex Search of ${folderName}`;
+            document.querySelector('h1').textContent = `Convert Text to Gregg shorthand using outlines from ${folderName}`;
+            document.querySelector('title').textContent = `Text to Gregg ${folderName}`;
         });
         // create a script tag to load the dict array
         const imagePath = './'; //path to word.png images

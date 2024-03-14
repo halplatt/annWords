@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Regex Search of ${imagePath1}</title>
+    <title>Regex Search</title>
     <link rel="stylesheet" href="_wordsearch.css">
     <script>
         const imagePath1 = './'; //path to word.png images
@@ -14,14 +14,14 @@
         try {
             const url = new URL(window.location.href);
             const path = url.pathname;
-            const folderName = path.substring(path.lastIndexOf('/')+1);
+            const folderName = path.substring(0,path.lastIndexOf('/')).split('/').pop();
 
             document.title = `Regex Search of ${folderName}`;
             document.querySelector('h1').textContent = `Regex Search of ${folderName}`;
+            document.querySelector('title').textContent = `Regex Search of ${folderName}`;
         } catch (error) {
-            document.title = `Regex Search of ${imagePath1}`;
+            //document.title = `Regex Search of ${imagePath1}`;
         }
-        document.querySelector('h1').textContent = `Regex Search of ${imagePath1}`;
         document.getElementById('regexInput').focus(); 
     });
     // Event to place focus and select text after focus or click
