@@ -40,12 +40,12 @@
         // create a script tag to load the dict array
         const imagePath = './'; //path to word.png images
         let script = document.createElement('script');
-        script.src = imagePath + '_words.array.js';
+        script.src = imagePath + '!words.array.js';
         document.head.appendChild(script);
         // create a script tag to load the dict2 array
         const imagePath2 = './!PNGCustom/'; //path to enhanced word.png images
         let script2 = document.createElement('script');
-        script2.src = imagePath2 + '_words.array2.js';
+        script2.src = imagePath2 + '!words.array2.js';
         document.head.appendChild(script2);
     </script>
     <p id="version"></p>
@@ -184,7 +184,7 @@ function writeText(text) {
 }
 function processInput() {
     const startTime = performance.now();
-    // dict array is defined in djsWords/_words.array.js
+    // dict array is defined in djsWords/!words.array.js
     resultContainer.innerHTML = ''; // Clear previous results
     let dict_lc = dict.map(word => word.toLowerCase());  //create a copy of dict array in lower case
     let dict2_lc = dict2.map(word => word.toLowerCase());  //create a copy of dict2 array in lower case

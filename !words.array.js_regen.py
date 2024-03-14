@@ -27,7 +27,7 @@ comma_delimited_file_names = ','.join(file_names)
 comma_delimited_file_names = f'const dict = [{comma_delimited_file_names}];'
 
 # Create the path for the output file
-output_file_path = os.path.join(script_dir, '_words.array.js')
+output_file_path = os.path.join(script_dir, '!words.array.js')
 
 # Save the comma-delimited string to a file named _words.array.js in the script's directory
 with open(output_file_path, 'w') as f:

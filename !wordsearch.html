@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<!-- Version Combined version of wordsearch.html and wordsearch.js and _wordsearch.css
-    3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./_words.array.js and ./!PNGCustom/_words.array2.js
+<!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./!words.array.js and ./!PNGCustom/!words.array2.js
 -->
 <html lang="en">
 <head>
@@ -14,7 +14,7 @@
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'version:2024-03-14at14:00';
+            document.getElementById('version').textContent = 'version:2024-03-14at17:12';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -38,12 +38,12 @@
             });
             // create a script tag to load the dict1 array
             let script1 = document.createElement('script');
-            script1.src = imagePath1 + '_words.array.js';
+            script1.src = imagePath1 + '!words.array.js';
             document.head.appendChild(script1);
 
             // create a script tag to load the dict2 array        
             let script2 = document.createElement('script');
-            script2.src = imagePath2 + '_words.array2.js'; //path to Customize dict2 array
+            script2.src = imagePath2 + '!words.array2.js'; //path to Customize dict2 array
             document.head.appendChild(script2);
             
             // Add an event listener for the keydown event
@@ -82,21 +82,41 @@
 
             //Function to open in new tab
             function openInNewTab(text) {
-                url='/djshorthand.html?x='+text
+                url = '/djshorthand.html?x=' + text;
                 var newTab = window.open('', 'DJshorthand');
 
-                // This part is executed in the context of the newly opened window/tab.
-                if (newTab.location.href === "about:blank") {
-                    // If the tab is new and hasn't loaded any page yet, load our URL
-                    newTab.location.href = url;
-                } else {
-                    // If the tab already has content, refresh with the new URL
-                    newTab.location.replace(url);
+                try {
+                    // This part is executed in the context of the newly opened window/tab.
+                    if (newTab.location.href === "about:blank") {
+                        // If the tab is new and hasn't loaded any page yet, load our URL
+                        newTab.location.href = url;
+                    } else {
+                        // If the tab already has content, refresh with the new URL
+                        newTab.location.replace(url);
+                    }
+
+                    // Bring the tab to front
+                    newTab.focus();
+
+                    // Check if the page returns a 404 error
+                    setTimeout(() => {
+                        try {
+                            if (newTab.location.href === "about:blank") {
+                                newTab.close(); // Close the tab if it's still blank
+                            }
+                        } catch (error) {
+                            console.error("Failed to access newTab.location.href: inside setTimeout:", error);
+                        }
+                    }, 3000); // Adjust the timeout value as needed
+                } catch (error) {
+                    console.error("Failed to access newTab.location.href: After setTimeout", error);
                 }
 
-                // Bring the tab to front
-                newTab.focus();
-            
+                // Debug statement to log the value of newTab.location.href
+                console.log("newTab.location.href:", newTab.location.href);
+                if (newTab.location.href === "about:blank") {
+                                newTab.close(); // Close the tab if it's still blank
+                }
             };
 
             // Function to perform the search
