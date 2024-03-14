@@ -19,4 +19,4 @@ $commaDelimitedFileNames = $fileNames -join ','
 $commaDelimitedFileNames = "const $dict = [" + $commaDelimitedFileNames + "];"
 
 # Save the comma-delimited string to a file named words.json
-Set-Content -Path "$PSScriptRoot\_words.array2.js" -Value $commaDelimitedFileNames
+Set-Content -Path "$PSScriptRoot\!words.array2.js" -Value $commaDelimitedFileNames
