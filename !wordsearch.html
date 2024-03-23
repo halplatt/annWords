@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    version:3/23/2024at12:15am Close if error occurs in newTab.location.href
     3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./!words.array.js and ./!PNGCustom/!words.array2.js
 -->
 <html lang="en">
@@ -14,7 +15,7 @@
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'version:2024-03-14at17:12';
+            document.getElementById('version').textContent = 'version:3/23/2024at12:15am';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -99,6 +100,7 @@
                     newTab.focus();
 
                     // Check if the page returns a 404 error
+                    
                     setTimeout(() => {
                         try {
                             if (newTab.location.href === "about:blank") {
@@ -108,15 +110,18 @@
                             console.error("Failed to access newTab.location.href: inside setTimeout:", error);
                         }
                     }, 3000); // Adjust the timeout value as needed
+                    
                 } catch (error) {
                     console.error("Failed to access newTab.location.href: After setTimeout", error);
                 }
 
                 // Debug statement to log the value of newTab.location.href
                 console.log("newTab.location.href:", newTab.location.href);
+                /*
                 if (newTab.location.href === "about:blank") {
                                 newTab.close(); // Close the tab if it's still blank
-                }
+               }
+               */              
             };
 
             // Function to perform the search
