@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    Version 3/23/2024 at 6:33PM prevent linking to DJshorthand.html if on halplatt.github.io.
     version:3/23/2024at12:15am Close if error occurs in newTab.location.href
     3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./!words.array.js and ./!PNGCustom/!words.array2.js
 -->
@@ -15,7 +16,7 @@
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'version:3/23/2024at12:15am';
+            document.getElementById('version').textContent = 'Version 3/23/2024 at 6:33PM';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -78,14 +79,16 @@
                 clipboardInput.select();
                 document.execCommand("copy");
                 clipboardInput.value = "";
-                openInNewTab(text)
+                if (window.location.hostname !== "halplatt.github.io") {
+                    openInNewTab(text)
+                }
+                
             }
 
             //Function to open in new tab
             function openInNewTab(text) {
                 url = '/djshorthand.html?x=' + text;
                 var newTab = window.open('', 'DJshorthand');
-
                 try {
                     // This part is executed in the context of the newly opened window/tab.
                     if (newTab.location.href === "about:blank") {
@@ -95,35 +98,12 @@
                         // If the tab already has content, refresh with the new URL
                         newTab.location.replace(url);
                     }
-
                     // Bring the tab to front
-                    newTab.focus();
-
-                    // Check if the page returns a 404 error
-                    
-                    setTimeout(() => {
-                        try {
-                            if (newTab.location.href === "about:blank") {
-                                newTab.close(); // Close the tab if it's still blank
-                            }
-                        } catch (error) {
-                            console.error("Failed to access newTab.location.href: inside setTimeout:", error);
-                        }
-                    }, 3000); // Adjust the timeout value as needed
-                    
+                    newTab.focus();          
                 } catch (error) {
-                    console.error("Failed to access newTab.location.href: After setTimeout", error);
+                    console.error(error);
                 }
-
-                // Debug statement to log the value of newTab.location.href
-                console.log("newTab.location.href:", newTab.location.href);
-                /*
-                if (newTab.location.href === "about:blank") {
-                                newTab.close(); // Close the tab if it's still blank
-               }
-               */              
-            };
-
+            }
             // Function to perform the search
             function performSearch() {
                 const maxWords = document.getElementById("maxWords").value;
