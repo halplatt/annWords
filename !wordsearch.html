@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    Version 12/2/2024 at 11:12PM link to GreggDictionary.html if on halplatt.github.io.
     Version 3/23/2024 at 6:33PM prevent linking to DJshorthand.html if on halplatt.github.io.
     version:3/23/2024at12:15am Close if error occurs in newTab.location.href
     3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./!words.array.js and ./!PNGCustom/!words.array2.js
@@ -16,7 +17,7 @@
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'Version 3/23/2024 at 6:33PM';
+            document.getElementById('version').textContent = 'Version 12/2/2024 at 11:12PM';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -81,6 +82,8 @@
                 clipboardInput.value = "";
                 if (window.location.hostname !== "halplatt.github.io") {
                     openInNewTab(text)
+                } else {
+                    openInNewTabGithub(text);
                 }
                 
             }
@@ -89,6 +92,25 @@
             function openInNewTab(text) {
                 url = '/djshorthand.html?x=' + text;
                 var newTab = window.open('', 'DJshorthand');
+                try {
+                    // This part is executed in the context of the newly opened window/tab.
+                    if (newTab.location.href === "about:blank") {
+                        // If the tab is new and hasn't loaded any page yet, load our URL
+                        newTab.location.href = url;
+                    } else {
+                        // If the tab already has content, refresh with the new URL
+                        newTab.location.replace(url);
+                    }
+                    // Bring the tab to front
+                    newTab.focus();          
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+            //Function to open in new tab
+              function openInNewTabGithub(text) {
+                url = '/GreggDictionary/GreggDictionary.html?x=' + text;
+                var newTab = window.open('', 'DJShorthand');
                 try {
                     // This part is executed in the context of the newly opened window/tab.
                     if (newTab.location.href === "about:blank") {
