@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    Version 12/6/2024 at 08:52PM add ../djsWords/!wordsearch_help.html link to Help
     Version 12/2/2024 at 11:12PM link to GreggDictionary.html if on halplatt.github.io.
     Version 3/23/2024 at 6:33PM prevent linking to DJshorthand.html if on halplatt.github.io.
     version:3/23/2024at12:15am Close if error occurs in newTab.location.href
@@ -17,7 +18,7 @@
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'Version 12/2/2024 at 11:12PM';
+            document.getElementById('version').textContent = 'Version 12/6/2024 at 08:52PM';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -328,7 +329,7 @@ h1 {
         <button id="searchButton">Search</button>
         <label for="maxWords">Maximum Words:</label>
         <input type="number" id="maxWords" name="maxWords" value="25">
-        <a href="!wordsearch_help.html" target="_blank">Help</a>
+        <a href="../djsWords/!wordsearch_help.html" target="_blank">Help</a>
         <ul id="resultList"></ul>
     </div>
     <textarea id="clipboardInput" style="position: absolute; left: -9999px;"></textarea>
