@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
-    Version 12/6/2024 at 08:52PM add ../djsWords/!wordsearch_help.html link to Help
-    Version 12/2/2024 at 11:12PM link to GreggDictionary.html if on halplatt.github.io.
+    Version 12/8/2024 at 02:19PM add phonetic pronunciation from dictionaryapi.dev
+    Version 12/6/2024 at 10:29 add help link to !wordsearch_help.html
     Version 3/23/2024 at 6:33PM prevent linking to DJshorthand.html if on halplatt.github.io.
     version:3/23/2024at12:15am Close if error occurs in newTab.location.href
     3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./!words.array.js and ./!PNGCustom/!words.array2.js
@@ -18,7 +18,7 @@
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'Version 12/6/2024 at 08:52PM';
+            document.getElementById('version').textContent = 'Version 12/8/2024 at 02:19PM';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -82,7 +82,7 @@
                 document.execCommand("copy");
                 clipboardInput.value = "";
                 if (window.location.hostname !== "halplatt.github.io") {
-                    openInNewTab(text)
+                    openInNewTab(text);
                 } else {
                     openInNewTabGithub(text);
                 }
@@ -111,7 +111,7 @@
             //Function to open in new tab
               function openInNewTabGithub(text) {
                 url = '/GreggDictionary/GreggDictionary.html?x=' + text;
-                var newTab = window.open('', 'DJShorthand');
+                var newTab = window.open('', 'GSDictionary');
                 try {
                     // This part is executed in the context of the newly opened window/tab.
                     if (newTab.location.href === "about:blank") {
@@ -170,6 +170,16 @@
 
                             listItem.appendChild(imgTag);
 
+                            // Create a span element for the pronunciation
+                            const pronunciationSpan = document.createElement("span");
+                            const pronunciationId = `pronunciation-${word}`;
+                            pronunciationSpan.id = pronunciationId;
+                            listItem.appendChild(pronunciationSpan);
+
+                            // Fetch and display the pronunciation
+                            fetchPronunciation(word, pronunciationId);
+
+                            // Add the list item to the result list
                             resultList.appendChild(listItem);
                             countDisplay++
                         }
@@ -224,6 +234,15 @@
 
                             listItem.appendChild(imgTag);
 
+                            // Create a span element for the pronunciation
+                            const pronunciationSpan = document.createElement("span");
+                            const pronunciationId = `pronunciation-${word}`;
+                            pronunciationSpan.id = pronunciationId;
+                            listItem.appendChild(pronunciationSpan);
+
+                            // Fetch and display the pronunciation
+                            fetchPronunciation(word, pronunciationId);
+
                             resultList.appendChild(listItem);
                             countDisplay++
                             
@@ -259,6 +278,19 @@
             const searchButton = document.getElementById("searchButton");
             searchButton.addEventListener("click", performSearch);
         });
+        // Function to fetch pronunciation for a given word
+        function fetchPronunciation(word, elementId) {
+            fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+                .then(response => response.json())
+                .then(data => {
+                    const pronunciation = data[0].phonetic || "Pronunciation not available";
+                    document.getElementById(elementId).textContent = pronunciation;
+            })
+                .catch(error => {
+                    console.error('Error fetching pronunciation for', word, ':', error);
+                    document.getElementById(elementId).textContent = "Error loading pronunciation.";
+                });
+        }
     </script>
 <style>
 body {
