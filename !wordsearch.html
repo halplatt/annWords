@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    Version 12/8/2024 at 06:47PM link to proper dictionary based on folder name.
     Version 12/8/2024 at 02:19PM add phonetic pronunciation from dictionaryapi.dev
     Version 12/6/2024 at 10:29 add help link to !wordsearch_help.html
     Version 3/23/2024 at 6:33PM prevent linking to DJshorthand.html if on halplatt.github.io.
@@ -14,11 +15,12 @@
     <script>
         const imagePath1 = './'; //path to word.png images
         const imagePath2 = '!PNGCustom/'; //path to enhanced word.png images
+        var globalGsd; //global variable to store the gsd value;
 
         //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
         document.addEventListener('DOMContentLoaded', (event) => { 
             // Set the version number
-            document.getElementById('version').textContent = 'Version 12/8/2024 at 02:19PM';
+            document.getElementById('version').textContent = 'Version 12/8/2024 at 06:47PM';
             try {
                 const url = new URL(window.location.href);
                 const path = url.pathname;
@@ -27,6 +29,7 @@
                 document.title = `Regex Search of ${folderName}`;
                 document.querySelector('h1').textContent = `Regex Search of ${folderName}`;
                 document.querySelector('title').textContent = `Regex Search of ${folderName}`;
+                globalGsd = folderName.substring(0,3);
             } catch (error) {
                 //document.title = `Regex Search of ${imagePath1}`;
             }
@@ -91,7 +94,7 @@
 
             //Function to open in new tab
             function openInNewTab(text) {
-                url = '/djshorthand.html?x=' + text;
+                url = '/GreggDictionary.html?x=' + text + '&gsd=' + globalGsd;
                 var newTab = window.open('', 'DJshorthand');
                 try {
                     // This part is executed in the context of the newly opened window/tab.
@@ -110,7 +113,7 @@
             }
             //Function to open in new tab
               function openInNewTabGithub(text) {
-                url = '/GreggDictionary/GreggDictionary.html?x=' + text;
+                url = '/GreggDictionary/GreggDictionary.html?x=' + text + '&gsd=' + globalGsd;
                 var newTab = window.open('', 'GSDictionary');
                 try {
                     // This part is executed in the context of the newly opened window/tab.
