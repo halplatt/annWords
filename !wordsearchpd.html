@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<!-- Version Combined version of wordsearch.html and wordsearch.js and !wordsearch.css
+    V2025.0616.0219pm add public_domain_only
+    V2025.0614.1122am add words pre-fix suffix and add exact button
+    v2025.0527.0331pm work on insert characters at cursor position  
+    version 5/7/2025 at 6:00PM add links to other tools
+    v=2025.0507.0109pm add link buttons to other tools
+    v2025.0505.0120am only ccreate the regexPattern once and use filter to get the matches
+    Version 2/12/2025 5:13PM Add Copyright notice   
+    Version 1/21/2025 10:46PM correct focus and select text after click
+    Version 1/17/2025 12AM link to target window GreggDictionary
+    Version 1/13/2025 at 11:48pm add special character buttons above search button
+    Version 1/8/2025 at 3:06PM do not display error message if no pronunciation is available, and handle error in getting folder name
+    Version 12/8/2024 at 06:47PM link to proper dictionary based on folder name.
+    Version 12/8/2024 at 02:19PM add phonetic pronunciation from dictionaryapi.dev
+    Version 12/6/2024 at 10:29 add help link to !wordsearch_help.html
+    Version 3/23/2024 at 6:33PM prevent linking to DJshorthand.html if on halplatt.github.io.
+    version:3/23/2024at12:15am Close if error occurs in newTab.location.href
+    3/13/2024 Generic version of wordsearch.htm to be used inside any dictionary of words with ./!words.array.js and ./!PNGCustom/!words.array2.js
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex Search</title>
+    <script>
+		var public_domain_only = 'pd'; // Declare this global variable to hide non-public domain links when it is set to 'pd'
+        document.addEventListener('DOMContentLoaded', (event) => { 
+            // Set the version number
+            document.getElementById('version').textContent = 'V2025.0616.0219pm'; // Version display element 
+            if (public_domain_only === 'pd') {
+					document.getElementById('version').innerHTML += "<br><i>items in the public domain.</i>";
+			}		
+        });
+        if (public_domain_only === 'pd') {
+            const style = document.createElement('style');
+            style.innerHTML = `
+            .sim,
+            .djs,
+            .cen,
+            .all,
+            .s90 {
+                display: none !important;
+            }`;
+            document.head.appendChild(style);
+        }
+        const imagePath1 = './'; //path to word.png images
+        const imagePath2 = '!PNGCustom/'; //path to enhanced word.png images
+        var globalGsd; //global variable to store the gsd value;
+
+        //Wrap code inside an event listener to ensure the DOM is fully loaded before running the code
+        document.addEventListener('DOMContentLoaded', (event) => { 
+            try {
+                const url = new URL(window.location.href);
+                const path = url.pathname;
+                const folderName = path.substring(0,path.lastIndexOf('/')).split('/').pop();
+
+                document.title = `Regex Search of ${folderName}`;
+                document.querySelector('h1').textContent = `Regex Search of ${folderName}`;
+                document.querySelector('title').textContent = `Regex Search of ${folderName}`;
+                globalGsd = folderName.substring(0,3);
+
+                const searchButton = document.getElementById("searchButton");
+                searchButton.addEventListener("click", performSearch);
+
+                // Attach caret/dollar update on input
+                var regexInput = document.getElementById('regexInput');
+                regexInput.addEventListener('input', function() {
+                    updateCaretButton();
+                    updateDollarButton();
+                });
+                // Initial update
+                updateCaretButton();
+                updateDollarButton();
+            } catch (error) {
+                document.title = `Regex Search of ${imagePath1}`;
+            }
+            document.getElementById('regexInput').focus(); 
+       
+            // Event to place focus and select text after focus or click
+            document.addEventListener('click', function(event) {
+                const targetId = event.target.id;
+                const excludeIds = [
+                    'maxWords','caretButton', 'addBegSet', 'addBegSetNot', 
+                    'addEndSet', 'addPipe', 'addAnyChar', 'add0orMore', 
+                    'add1orMore', 'add0or1', 'dollarButton'
+                ];
+                if (targetId !== 'maxWords') {
+                    document.getElementById('regexInput').focus();    
+                }
+                if (!excludeIds.includes(targetId)) {
+                    document.getElementById('regexInput').select();
+                }
+            });
+            // create a script tag to load the dict1 array
+            let script1 = document.createElement('script');
+            script1.src = imagePath1 + '!words.array.js';
+            document.head.appendChild(script1);
+
+            // create a script tag to load the dict2 array        
+            let script2 = document.createElement('script');
+            script2.src = imagePath2 + '!words.array2.js'; //path to Customize dict2 array
+            document.head.appendChild(script2);
+            
+            // Add an event listener for the keydown event
+            document.addEventListener("keydown", function(event) {
+                // Check if the key pressed is enter
+                if (event.key === "Enter") {
+                // Call the displayHello function
+                performSearch();
+                }
+            });
+            
+            //add vertical align to the image based on the content of a corresponding text file 
+            function getVerticalAlign(pngFile) {
+                var txtFile = pngFile.replace('.png', '.txt');
+
+                return fetch(txtFile)
+                    .then(response => {
+                        if (!response.ok) {
+                            return '0px';
+                        }
+                        return response.text();
+                    })
+                    .then(px => (-1 * parseFloat(px.trim())) + 'px')  // Prepend a '-' to the number
+                    .catch(() => '0px');
+            }
+            
+            // Function to copy text to clipboard
+            function copyToClipboard(text) {
+                const clipboardInput = document.getElementById("clipboardInput");
+                clipboardInput.value = text;
+                clipboardInput.select();
+                document.execCommand("copy");
+                clipboardInput.value = "";
+                if (window.location.hostname !== "halplatt.github.io") {
+                    openInNewTab(text);
+                } else {
+                    openInNewTabGithub(text);
+                }
+                
+            }
+
+            //Function to open in new tab
+            function openInNewTab(text) {
+                url = '../GreggDictionary'+public_domain_only+'.html?x=' + text + '&gsd=' + globalGsd;
+                var newTab = window.open(url, 'GreggDictionary');
+                newTab.focus();
+            }
+            //Function to open in new tab when on github
+              function openInNewTabGithub(text) {
+                url = '/GreggDictionary/GreggDictionary'+public_domain_only+'.html?x=' + text + '&gsd=' + globalGsd;
+                var newTab = window.open(url, 'GreggDictionary');
+                newTab.focus();
+            }
+            // Function to perform the search
+            function performSearch() {
+                const maxWords = document.getElementById("maxWords").value;
+                const regexInput = document.getElementById("regexInput");
+                const resultList = document.getElementById("resultList");
+                const regexPattern = new RegExp(regexInput.value, 'i');
+                let countMatches = 0;
+                let countDisplay = 0;
+                // Clear previous results
+                resultList.innerHTML = "";
+                try {
+                    // Filter all matches and store the total count
+                    const alldict2Matches = dict2.filter(word => regexPattern.test(word));
+                    const cntDict2Matches = alldict2Matches.length;
+                    const dict2Matches=alldict2Matches.slice(0, maxWords);
+                    dict2Matches.forEach(word => {
+                
+                        if (regexPattern.test(word)) {
+                            countMatches++
+                            const listItem = document.createElement("li");
+                            listItem.textContent = word+"+";
+                            listItem.addEventListener("click", () => copyToClipboard(word));
+
+                            // Create an img element for the word if the PNG file exists
+                            const img = document.createElement("img");
+                            img.src = `${imagePath2}${word}.png`;
+                            img.onerror = function() {
+                                this.style.display = "none";  // Hide the image if it fails to load
+                            };
+
+                            // Add vertical align to the image based on the content of a corresponding text file
+                            getVerticalAlign(img.src).then(verticalAlign => {
+                                img.style.verticalAlign = verticalAlign;
+                            });
+
+                            listItem.appendChild(img);
+
+                            // Create an img element for the text image
+                            const imgTag = document.createElement("img");
+                            imgTag.src = `${imagePath2}${word}.tag.png`;
+                            imgTag.onerror = function() {
+                                this.style.display = "none";  // Hide the image if it fails to load
+                            };
+
+                            listItem.appendChild(imgTag);
+
+                            // Create a span element for the pronunciation
+                            const pronunciationSpan = document.createElement("span");
+                            const pronunciationId = `pronunciation-${word}`;
+                            pronunciationSpan.id = pronunciationId;
+                            listItem.appendChild(pronunciationSpan);
+
+                            // Fetch and display the pronunciation
+                            fetchPronunciation(word, pronunciationId);
+
+                            // Add the list item to the result list
+                            resultList.appendChild(listItem);
+                            countDisplay++
+                        }
+                    });
+                    // After looping through dict
+                    if (resultList.innerHTML === "") {
+            
+                    } else {
+                        if (resultList.innerHTML === "") {
+                            // ...
+                        } else {
+                            const endOfResults = document.createElement("div");
+                            endOfResults.textContent = `<end of ${countDisplay} of ${cntDict2Matches} Custom Outline matches>`;
+                            endOfResults.style.color = "black";
+                            resultList.appendChild(endOfResults);
+                         }
+                    }
+                   
+                    // Filter all matches and store the total count
+                    const allMatches = dict.filter(word => regexPattern.test(word));
+                    const cntTotalMatches = allMatches.length;
+
+                    // Limit the matches to maxWords
+                    const matches = allMatches.slice(0, maxWords);
+                    matches.forEach(word => {
+                        //Handle enhanced word images
+                
+                            countMatches++;
+                            //Handle Match 
+                            const listItem = document.createElement("li");
+                            listItem.textContent = word;
+                            if (dict2.includes(word)) {
+                                listItem.textContent = word+"*";
+                            }
+                            listItem.addEventListener("click", () => copyToClipboard(word));
+
+                            // Create an img element for the word if the PNG file exists
+                            const img = document.createElement("img");
+                            img.src = `${imagePath1}${word}.png`;
+                            img.onerror = function() {
+                                this.style.display = "none";  // Hide the image if it fails to load
+                            };
+
+                            // Add vertical align to the image based on the content of a corresponding text file
+                            getVerticalAlign(img.src).then(verticalAlign => {
+                                img.style.verticalAlign = verticalAlign;
+                            });
+
+                            listItem.appendChild(img);
+
+                            // Create an img element for the text image
+                            const imgTag = document.createElement("img");
+                            imgTag.src = `${imagePath1}${word}.tag.png`;
+                            imgTag.onerror = function() {
+                                this.style.display = "none";  // Hide the image if it fails to load
+                            };
+
+                            listItem.appendChild(imgTag);
+
+                            // Create a span element for the pronunciation
+                            const pronunciationSpan = document.createElement("span");
+                            const pronunciationId = `pronunciation-${word}`;
+                            pronunciationSpan.id = pronunciationId;
+                            listItem.appendChild(pronunciationSpan);
+
+                            // Fetch and display the pronunciation
+                            fetchPronunciation(word, pronunciationId);
+
+                            resultList.appendChild(listItem);
+                            countDisplay++
+                            
+                    });
+                    // After looping through dict
+                    // Display results summary
+                    if (countMatches === 0) {
+                        const noResults = document.createElement("div");
+                        noResults.textContent = "<No matches found>";
+                        noResults.style.color = "black";
+                        resultList.appendChild(noResults);
+                    } else if (cntTotalMatches > maxWords) {
+                        const maxResults = document.createElement("div");
+                        maxResults.textContent = `Max display limited to ${matches.length} of ${cntTotalMatches} matches`; //
+                        maxResults.style.color = "black";
+                        resultList.appendChild(maxResults);
+                    } else {
+                        const endOfResults = document.createElement("div");
+                        endOfResults.textContent = `<end of ${matches.length} matches>`;
+                        endOfResults.style.color = "black";
+                        resultList.appendChild(endOfResults);
+                    }
+                    if (countMatches > 0) {
+                        const aboutText = document.createElement("div");
+                        if (globalGsd=="djs") {
+                            aboutText.innerHTML = ("<p><b>Images from</b> <i>Gregg Shorthand Dictionary DJS,</i> a book published by The McGraw-Hill Publishing Company in 1963, written by Charles Rader. </p>");
+                        } else if (globalGsd=="ann") {
+                            aboutText.innerHTML = ("<p><b>Images from</b> <i>Gregg Shorthand Dictionary Anniversary,</i> a book published by The Gregg Publishing Company in 1929, written by John Robert Gregg. </p>");
+                        } else if (globalGsd=='pre') {
+                            aboutText.innerHTML = ("<p><i><b>Page from</b> Gregg Shorthand Dictionary (1916),</i> a book published by The Gregg Publishing Company in 1916, including 17,000 shorthand forms written by Alice Rinne Hagar</p>");
+                        }
+                        resultList.appendChild(aboutText);
+                    }
+                     // Refocus the input
+                    regexInput.focus();
+                    regexInput.select();
+                } catch (error) {
+                    // Handle the error by displaying an alert
+                    alert(`Regular Expression ${regexInput.value} Error: ${error.message}`);    
+                }
+
+            }
+
+            // Attach the search function to the button click event
+            const searchButton = document.getElementById("searchButton");
+            searchButton.addEventListener("click", performSearch);
+        });
+        function updateCaretButton() {
+            var regexInput = document.getElementById('regexInput');
+            var caretButton = document.getElementById('caretButton');
+            if (regexInput.value.startsWith('^')) {
+                caretButton.querySelector('small').textContent = "clear ^prefix";
+                caretButton.title = "Remove ^ from the start";
+            } else {
+                caretButton.querySelector('small').textContent = "^prefix";
+                caretButton.title = "Insert ^ to indicate the start of the word";
+            }
+        }
+
+        function updateDollarButton() {
+            var regexInput = document.getElementById('regexInput');
+            var dollarButton = document.getElementById('dollarButton');
+            if (regexInput.value.endsWith('$')) {
+                dollarButton.querySelector('small').textContent = "clear suffix$";
+                dollarButton.title = "Remove $ from the end";
+            } else {
+                dollarButton.querySelector('small').textContent = "suffix$";
+                dollarButton.title = "Insert $ to indicate the end of the word";
+            }
+        }
+
+        function addCaret() {
+            var regexInput = document.getElementById('regexInput');
+            var value = regexInput.value;
+            if (value.startsWith('^')) {
+                regexInput.value = value.substring(1);
+            } else {
+                regexInput.value = '^' + value;
+            }
+            regexInput.focus();
+            updateCaretButton();
+            updateDollarButton(); 
+        }
+
+        function addDollar() {
+            var regexInput = document.getElementById('regexInput');
+            var value = regexInput.value;
+            if (value.endsWith('$')) {
+                regexInput.value = value.slice(0, -1);
+            } else {
+                regexInput.value = value + '$';
+            }
+            regexInput.focus();
+            updateCaretButton();
+            updateDollarButton(); 
+        }
+
+        function addExact() {
+            var regexInput = document.getElementById('regexInput');
+            var value = regexInput.value;
+            // Add ^ at the start if not present
+            if (!value.startsWith('^')) {
+                value = '^' + value;
+            }
+            // Add $ at the end if not present
+            if (!value.endsWith('$')) {
+                value = value + '$';
+            }
+            regexInput.value = value;
+            regexInput.focus();
+            regexInput.selectionStart = 0;
+            regexInput.selectionEnd = value.length;
+            updateCaretButton();
+            updateDollarButton();             
+        }
+        // Function to add text at the cursor position or end of the text if no cursor position
+        function addTextAtCursor(text) {
+            var regexInput = document.getElementById('regexInput');
+            regexInput.focus();
+            var startPos = typeof regexInput.selectionStart === "number" ? regexInput.selectionStart : regexInput.value.length;
+            var endPos = typeof regexInput.selectionEnd === "number" ? regexInput.selectionEnd : regexInput.value.length;
+            // Insert the text after the selected text, not replacing it
+            regexInput.value = 
+                regexInput.value.substring(0, endPos) + 
+                text + 
+                regexInput.value.substring(endPos);
+            // Set the cursor position to the end of the inserted text
+            var cursorPos = endPos + text.length;
+            regexInput.selectionStart = regexInput.selectionEnd = cursorPos;
+        }
+
+        // Function to fetch pronunciation for a given word
+        function fetchPronunciation(word, elementId) {
+            fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`)
+                .then(response => response.json())
+                .then(data => {
+                    const pronunciation = data[0].phonetic || ""; //"" if pronounciation not available
+                    document.getElementById(elementId).textContent = pronunciation;
+            })
+                .catch(error => {
+                    //console.error('Error fetching pronunciation for', word, ':', error);
+                    document.getElementById(elementId).textContent = ""; //"" if error retrieving pronunciation 
+                });
+        }
+        // Function to open or focus a tab with the given URL and target
+		function openOrFocusTab(url, target) {
+            var newTab = window.open('', target);
+            if (newTab.location.href === "about:blank") {
+                newTab.location.href = url;
+            } else {
+                //do nothing, the tab is already open
+            }
+            newTab.focus();
+        }
+    </script>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+.container {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#version {
+    position: absolute;
+    top: 10px;
+    right: 75px;
+    font-size: 0.8em;
+    color: #888;
+}
+
+
+#regexInput {
+    width: 60%;
+    padding: 5px;
+    margin-right: 10px;
+}
+
+#searchButton {
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+#resultList {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+}
+
+#resultList li {
+    margin: 5px 0;
+    cursor: pointer;
+    color: #007bff;
+}
+
+#resultList li:hover {
+    text-decoration: underline;
+}
+.input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.button-row {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping to the next line if needed */
+    justify-content: flex-start;
+    width: 100%;
+}
+.input-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+}
+.button-row button {
+    margin-right: 5px;
+}
+.inner {
+    margin-right: 10px; /* Add spacing between links */
+    display: inline-block; /* Ensure links are displayed inline */
+}
+
+#caretButton {
+    margin-right: 10px;
+}
+#addBegSetNot {
+    margin-right: 5px;
+}
+#addEndSet {
+    margin-right: 20px;
+}
+#addPipe {
+    margin-right: 20px;
+}
+#addAnyChar {
+    margin-right: 20px;
+}
+#add0or1 {
+    margin-right: 10px;
+}
+</style>
+</head>
+<body>
+    <div class="container">
+        <p id="version"></p>
+        <h1>Regex Search</h1>
+            <div class="button-row">
+                <span>Link to main dictionary:</span>
+                <div class="inner">
+                    <a href="javascript:void(0);" onclick="openOrFocusTab('../GreggDictionary' + public_domain_only + '.html', 'GreggDictionary')">Gregg Dictionary</a>
+                </div>
+            </div>
+            <div class="button-row">
+                <span>Link to Regex search for:</span>
+                <div class="inner all">
+                    <a class="all" href="javascript:void(0);" onclick="openOrFocusTab('../!wordsearchall.html', 'allWords')">all-versions</a>
+                </div>
+                <div class="inner djs">
+                    <a a class="djs" href="javascript:void(0);" onclick="openOrFocusTab('../djsWords/!wordsearch.html', 'djsWords')">djs</a>
+                </div>
+                <div class="inner sim">
+                    <a a class="sim" href="javascript:void(0);" onclick="openOrFocusTab('../simDictionary/!wordsearch.html', 'simWords')">Simplified-in-page</a>
+                </div>
+                <div class="inner ann">
+                    <a class="ann"  href="javascript:void(0);" onclick="openOrFocusTab('../annWords/!wordsearch' + public_domain_only + '.html', 'annWords');">Anniversary</a>
+                </div>
+                <div class="inner ann">
+                    <a class="ann" href="javascript:void(0);" onclick="openOrFocusTab('../annDictionary/!wordsearch' + public_domain_only + '.html', 'annWordsinpage');">Anniversary-in-page</a>
+                </div>
+                <div class="inner pre">
+                    <a class="pre" href="javascript:void(0);" onclick="openOrFocusTab('../preWords/!wordsearch' + public_domain_only + '.html', 'preWords');">pre-Anniversary</a>
+                </div>
+            </div>
+            <div class="button-row">
+					<span>Link to text to Gregg for:</span>
+                    <div class="inner">
+                        <a class="djs" href="javascript:void(0);" onclick="openOrFocusTab('../djsWords/!textToGregg.html', 't2djsWords');">djs</a>
+                    </div>
+                    <div class="inner">
+                        <a class="ann" href="javascript:void(0);" onclick="openOrFocusTab('../annWords/!textToGregg' + public_domain_only + '.html', 't2annWords');">Anniversary</a>
+                    </div>
+                    <div class="inner">
+                        <a class="pre" href="javascript:void(0);" onclick="openOrFocusTab('../preWords/!textToGregg' + public_domain_only + '.html', 't2preWords');">pre-Anniversary</a>
+                    </div>
+            </div>
+            <br>
+            <div class="input-container"></div>     
+            <div class="button-row">
+                <button id="caretButton" onclick="addCaret()" title="Insert ^ to indicate the start of the word">
+                    <small>^prefix</small>
+                </button>
+                <button id="addBegSet" onclick="addTextAtCursor('[')" title="Insert [ to begin a list of valid characters">[</button>
+                <button id="addBegSetNot" onclick="addTextAtCursor('[^')" title="Insert [^ to begin a list of characters not valid in this position">[^</button>
+                <button id="addEndSet" onclick="addTextAtCursor(']')" title="Insert ] to end a list of characters">]</button>
+                <button id="addPipe" onclick="addTextAtCursor('|')" title="Insert | to separate multiple patterns">|</button>
+                <button id="addAnyChar" onclick="addTextAtCursor('.')" title="Insert . to represent any character">.</button>
+                <button id="add0orMore" onclick="addTextAtCursor('*')" title="Insert * to indicate the previous character repeats 0 or more times">*</button>
+                <button id="add1orMore" onclick="addTextAtCursor('+')" title="Insert + to indicate the previous character repeats 1 or more times">+</button>
+                <button id="add0or1" onclick="addTextAtCursor('?')" title="Insert ? to indicate the previous character appears 0 or 1 times">?</button>
+                <button id="dollarButton" onclick="addDollar()" title="Insert $ to indicate the end of the word"><small>suffix$</small></button>
+                <button id="exactButton" onclick="addExact()" title="Match the exact word (adds ^ and $)"><small>^exact$</small></button>   
+                </button>
+
+            </div>
+            <div class="input-row">
+                <input type="text" id="regexInput" placeholder="Enter Regular Expression">
+                <button id="searchButton">Search</button>
+                <label for="maxWords">Maximum Words:</label>
+                <input type="number" id="maxWords" name="maxWords" value="100">
+                <a href="../djsWords/!wordsearch_help.html" target="_blank">Help</a>
+            </div>
+        </div>
+        <ul id="resultList"></ul>
+    </div>
+    <textarea id="clipboardInput" style="position: absolute; left: -9999px;"></textarea>
+</body>
+</html>
